@@ -1,0 +1,49 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: naiscar-testing
+  name: naiscar-testing
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: naiscar-testing
+  template:
+    metadata:
+      labels:
+        app: naiscar-testing
+    spec:
+      containers:
+      - name: nais-testapp
+        env:
+        - name: TEST_CONNECTIVITY_URL
+          value: https://fasit.adeo.no/isalive
+        image: navikt/nais-testapp:istio-2
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+      - name: naiscar
+        image: navikt/naiscar:latest
+        ports:
+        - containerPort: 6969
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    auth.istio.io/6969: NONE
+  labels:
+    app: naiscar-testing
+  name: naiscar-testing
+  namespace: default
+spec:
+  ports:
+  - port: 6969
+    protocol: TCP
+    targetPort: 6969
+  selector:
+    app: naiscar-testing
+  type: ClusterIP
