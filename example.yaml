@@ -12,6 +12,9 @@ spec:
       app: naiscar-testing
   template:
     metadata:
+      annotations:                                                                                       
+        "prometheus.io/scrape": "true"
+        "prometheus.io/port": "6969"
       labels:
         app: naiscar-testing
     spec:
@@ -21,11 +24,20 @@ spec:
         - name: TEST_CONNECTIVITY_URL
           value: https://fasit.adeo.no/isalive
         image: navikt/nais-testapp:istio-2
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /isalive
+            port: 6969
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
         ports:
         - containerPort: 8080
           protocol: TCP
       - name: naiscar
-        image: navikt/naiscar:latest
+        image: navikt/naiscar:1
         ports:
         - containerPort: 6969
           protocol: TCP
