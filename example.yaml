@@ -37,7 +37,7 @@ spec:
         - containerPort: 8080
           protocol: TCP
       - name: naiscar
-        image: navikt/naiscar:beta-1
+        image: navikt/naiscar:2
         ports:
         - containerPort: 6969
           protocol: TCP
