@@ -37,16 +37,18 @@ spec:
         - containerPort: 8080
           protocol: TCP
       - name: naiscar
-        image: navikt/naiscar:1
+        image: navikt/naiscar:beta-1
         ports:
         - containerPort: 6969
           protocol: TCP
+        command: ["/etc/envoy/inject_routes_and_run"]
+        args: ["/isalive,/metrics", "8080"]
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    auth.istio.io/6969: NONE
+#  annotations:
+#    auth.istio.io/6969: NONE
   labels:
     app: naiscar-testing
   name: naiscar-testing
@@ -59,3 +61,32 @@ spec:
   selector:
     app: naiscar-testing
   type: ClusterIP
+---
+## do we need this?
+#apiVersion: "authentication.istio.io/v1alpha1"
+#kind: "Policy"
+#metadata:
+#  name: "naiscar-testing"
+#  namespace: default
+#spec:
+#  targets:
+#  - name: naiscar-testing
+#    ports:
+#    - number: 6969
+#  peers:
+#---
+apiVersion: "networking.istio.io/v1alpha3"
+kind: "DestinationRule"
+metadata:
+  name: "naiscar-testing"
+  namespace: "default"
+spec:
+  host: "naiscar-testing"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+    portLevelSettings:
+    - port:
+        number: 6969
+      tls:
+        mode: DISABLE

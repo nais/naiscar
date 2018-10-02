@@ -1,0 +1,18 @@
+#!/bin/bash
+
+PATHS="${1}"
+TARGET_PORT="${2}"
+ROUTES=""
+
+for p in $(echo "${PATHS}" | tr "," "\n"); do
+    ROUTES+="              - match:\n"
+    ROUTES+="                  path: ${p}\n"
+    ROUTES+="                route:\n"
+    ROUTES+="                  cluster: local_service\n"
+done
+
+sed -e "s|@@ROUTES@@|${ROUTES}|g" /etc/envoy/envoy.yaml.tpl | sed -e "s/@@TARGET_PORT@@/${TARGET_PORT}/g" > /etc/envoy/envoy.yaml
+
+# --base-id to avoid conflict with shared memory files in pod
+/usr/local/bin/envoy -c /etc/envoy/envoy.yaml --base-id 69
+
